@@ -1,32 +1,29 @@
-# React + TypeScript + Vite
+# Hayayomi
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+青空文庫などのテキストを読み込み、フラッシュ暗算のように文節を一つずつ表示する速読アプリ（RSVP 方式）。
 
-Currently, two official plugins are available:
+## 特徴
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- スマホ主体の PWA。PC ブラウザでも利用可能
+- バックエンドなし。すべての処理をブラウザ内で完結
+- 文節単位で表示するため、単語単位より読みやすい
+- 表示速度はユーザーが調整可能
 
-## React Compiler
+## 技術スタック
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| 用途 | ライブラリ |
+|---|---|
+| フレームワーク | Vite + React + TypeScript |
+| PWA 化 | vite-plugin-pwa |
+| 文節分割 | BudouX |
+| 保存（本棚・読書位置） | Dexie.js（IndexedDB） |
+| zip 展開 | fflate |
+| APK 化（予定） | Capacitor |
 
-## Expanding the Oxlint configuration
+## 開発
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
+npm run build
 ```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
