@@ -7,15 +7,28 @@
 - バックエンドなし。すべてブラウザ内で処理する
   - 同期やアカウントが必要になったら Supabase / Firebase を足す。保存処理は一か所にまとめて差し替えやすくしておく
 - Vite + React + TypeScript
-- vite-plugin-pwa / BudouX（文節分割）/ Dexie.js（IndexedDB）/ fflate（zip展開）
+- vite-plugin-pwa / BudouX（文節分割）/ Dexie.js（IndexedDB）/ fflate（zip展開）/ MUI（UI部品）
 - 分割は単語ではなく文節単位（BudouX）。kuromoji.js は辞書が重いので使わない
 - APK化する場合は Capacitor を使う（distを同梱するのでサーバー不要・オフライン動作）。TWA は公開サーバーが必要なので使わない
 
+## スタイル
+- UI は MUI。スタイルは `sx` で tsx に書き、CSS ファイルは作らない
+- 文節を高速で切り替える表示部分では `sx` の値を毎回変えない（emotion がスタイルを計算し直す負担を避けるため）
+
+## ディレクトリ構成
+- 機能ごとに分ける（`src/features/import`・`src/features/reader`・`src/features/library`）。アトミックデザインは採らない
+- 機能をまたいで使うものだけ `src/components/`（部品）・`src/lib/`（汎用処理）に出す
+- 保存処理（Dexie）は `src/storage/` に集める
+- ロジック（.ts）と画面（.tsx）を分ける。テストは対象の隣に `*.test.ts` で置く
+- まだ使わないフォルダは、必要になってから作る
+
 ## 青空文庫の扱い
-- Shift_JIS は `new TextDecoder('shift_jis')` で読む
-- ルビ（《》、｜）、注記（［＃…］）、末尾の底本情報は除去する
-- 直接取得は CORS に阻まれる可能性があるため、最初はファイル選択で取り込む
+- 取り込むのは「テキストファイル(ルビあり)」の zip。中の .txt を fflate で取り出す（展開済みの .txt も受け付ける）
+- 文字コードは、UTF-8 として読めなければ Shift_JIS とみなし `new TextDecoder('shift_jis')` で読む
+- 冒頭の記号説明（-------で囲まれた部分）、ルビ（《》、｜）、注記（［＃…］）、末尾の底本情報は除去する
+- 外字注記（※［＃…］）は当面「〓」に置き換える
+- 直接取得は CORS に阻まれる可能性があるため、ファイル選択で取り込む
 
 ## 進め方
-- まずは「テキスト貼り付け → 文節分割 → 指定速度で表示」の最小構成から作る
-- 取り込み（ファイル・zip）や本棚はその後
+- ファイル取り込み（.txt / .zip）と全文表示はできた
+- 次は「文節分割 → 指定速度で表示」。本棚はその後
