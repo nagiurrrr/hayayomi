@@ -71,22 +71,26 @@ src/
 
 Node.js 22.18 以降（LTS の 24 を推奨）が必要。
 
+画面（直下）と Worker（`worker/`）は npm workspaces でまとめてあり、コマンドは直下で打つ。
+
 ```bash
-npm install    # 必要なライブラリを入れる
-npm run dev    # 開発用サーバーを起動する
-npm run build  # 公開用のファイルを dist フォルダに作る
+npm install      # 画面と Worker の両方のライブラリを入れる
+npm run dev      # 画面（http://localhost:5173/hayayomi/）と Worker（http://localhost:8787）を一緒に起動する
+npm run dev:web  # 画面だけを起動する
+npm run build    # 公開用のファイルを dist フォルダに作る
 ```
+
+`npm run dev` は concurrently で二つを並べて動かす。ログの頭の `[web]` が画面、`[api]` が Worker。
+
+画面は `.env.development` の `VITE_API_URL`（`http://localhost:8787`）の Worker を使う。`npm run dev:web` の時に公開済みの Worker を使うなら、`.env.development.local` に `VITE_API_URL=公開済みの Worker の URL` を書く（git には入らない）。
 
 ### Worker（青空文庫の中継）
 
-画面の開発用サーバーは、`.env.development` の `VITE_API_URL`（`http://localhost:8787`）の Worker を使う。別のターミナルで Worker も起動しておく。
+Worker だけのコマンドは `-w worker` を付けて直下で打つ。
 
 ```bash
-cd worker
-npm install
-npm run dev        # http://localhost:8787 で起動する
-npm run typecheck  # 型チェック
-npm run types      # wrangler.jsonc を変えたら、型（worker-configuration.d.ts）を作り直す
+npm run typecheck -w worker  # 型チェック
+npm run types -w worker      # wrangler.jsonc を変えたら、型（worker-configuration.d.ts）を作り直す
 ```
 
 公開先の URL は `.env.production` に書く。
@@ -96,17 +100,19 @@ npm run types      # wrangler.jsonc を変えたら、型（worker-configuration
 `main` に push すると GitHub Actions が公開する。
 
 - 画面: `.github/workflows/deploy.yml` が GitHub Pages に公開する
-- Worker: `worker/` か `shared/` が変わった時に `.github/workflows/deploy-worker.yml` が Cloudflare に公開する。GitHub の Secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` が必要
+- Worker: `worker/`・`shared/`・`package-lock.json` が変わった時に `.github/workflows/deploy-worker.yml` が Cloudflare に公開する。GitHub の Secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` が必要
 
 ※API トークンは Cloudflare のダッシュボードの「API トークン」から、テンプレート「Cloudflare Workers を編集する」で作る
 
 ### スマホで確かめる
 
 ```bash
-npm run dev -- --host  # 同じ Wi-Fi の端末から開けるように起動する
+npm run dev:web -- --host  # 同じ Wi-Fi の端末から開けるように起動する
 ```
 
 表示された `Network:` の URL（例: `http://192.168.1.12:5173/`）を、PC と同じ Wi-Fi につないだスマホで開く。
+
+※スマホからは PC の Worker（`localhost:8787`）に届かないため、おすすめ一覧は出ない。ファイル選択での取り込みと表示を確かめる用
 
 開けない時は次を確かめる。
 

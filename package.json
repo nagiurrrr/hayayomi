@@ -3,8 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "worker"
+  ],
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently -n web,api -c blue,magenta \"vite\" \"npm run dev -w worker\"",
+    "dev:web": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
@@ -23,9 +27,14 @@
     "@types/react-dom": "^19.2.7",
     "@vite-pwa/assets-generator": "^2.0.0",
     "@vitejs/plugin-react": "^6.1.1",
+    "concurrently": "^10.0.6",
     "oxlint": "^1.81.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0",
     "vite-plugin-pwa": "^2.0.0"
+  },
+  "allowScripts": {
+    "workerd@1.20261006.1": true,
+    "esbuild@0.28.2": true
   }
 }
