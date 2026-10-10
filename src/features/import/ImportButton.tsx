@@ -3,6 +3,15 @@ import { Button } from '@mui/material'
 import type { AozoraText } from './aozora'
 import { importFile } from './importFile'
 
+// Android のファイル選択は MIME タイプで絞り込むことがあるので、拡張子と併記する
+const ACCEPT = [
+  '.txt',
+  '.zip',
+  'text/plain',
+  'application/zip',
+  'application/x-zip-compressed',
+].join(',')
+
 type Props = {
   onImport: (book: AozoraText) => void
   onError: (message: string) => void
@@ -22,7 +31,7 @@ export function ImportButton({ onImport, onError }: Props) {
   return (
     <Button variant="outlined" component="label">
       ファイルを選ぶ（.txt / .zip）
-      <input type="file" accept=".txt,.zip" hidden onChange={handleChange} />
+      <input type="file" accept={ACCEPT} hidden onChange={handleChange} />
     </Button>
   )
 }
