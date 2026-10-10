@@ -3,6 +3,8 @@
 青空文庫などのテキストを読み込み、フラッシュ暗算のように文節を一つずつ表示する速読アプリ（RSVP 方式）。
 ※RSVP: Rapid Serial Visual Presentation／高速逐次視覚提示。画面の同じ場所に言葉を次々と映す読み方
 
+**▶ アプリを開く: https://nagiurrrr.github.io/hayayomi/**
+
 ## 特徴
 
 - スマホ主体の PWA。PC ブラウザでも利用可能
