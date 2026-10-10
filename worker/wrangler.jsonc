@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hayayomi-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "observability": { "enabled": true },
+  "vars": {
+    // 読み取りを許す Origin（GitHub Pages と、npm run dev の開発用サーバー）
+    "ALLOWED_ORIGINS": "https://nagiurrrr.github.io,http://localhost:5173"
+  },
+  // ランキングの結果を 1 日置いておく場所
+  "kv_namespaces": [{ "binding": "CACHE" }]
+}
