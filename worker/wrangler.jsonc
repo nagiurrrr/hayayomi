@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "hayayomi-api",
+  "name": "api",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   "observability": { "enabled": true },
@@ -9,5 +9,5 @@
     "ALLOWED_ORIGINS": "https://nagiurrrr.github.io,http://localhost:5173"
   },
   // ランキングの結果を 1 日置いておく場所
-  "kv_namespaces": [{ "binding": "CACHE" }]
+  "kv_namespaces": [{ "binding": "CACHE", "id": "5aca9470a58145cd861cf0b08e61429e" }]
 }
