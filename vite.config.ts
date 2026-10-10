@@ -4,6 +4,8 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // GitHub Pages では https://nagiurrrr.github.io/hayayomi/ に置かれる
+  base: '/hayayomi/',
   plugins: [
     react(),
     VitePWA({
