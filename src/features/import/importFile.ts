@@ -3,10 +3,12 @@ import { decodeText, parseAozora, type AozoraText } from './aozora'
 
 export async function importFile(file: File): Promise<AozoraText> {
   const bytes = new Uint8Array(await file.arrayBuffer())
-  const textBytes = file.name.toLowerCase().endsWith('.zip')
-    ? extractTextFromZip(bytes)
-    : bytes
-  return parseAozora(decodeText(textBytes))
+  return importBytes(bytes, file.name.toLowerCase().endsWith('.zip'))
+}
+
+// ファイル選択とダウンロードのどちらで得たバイト列も、ここで本文にする
+export function importBytes(bytes: Uint8Array, isZip: boolean): AozoraText {
+  return parseAozora(decodeText(isZip ? extractTextFromZip(bytes) : bytes))
 }
 
 function extractTextFromZip(bytes: Uint8Array): Uint8Array {
