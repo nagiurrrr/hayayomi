@@ -1,9 +1,12 @@
 import { unzipSync } from "fflate";
 import { decodeText, parseAozora, type AozoraText } from "./aozora";
+import { parseEpub } from "./epub";
 
 export async function importFile(file: File): Promise<AozoraText> {
   const bytes = new Uint8Array(await file.arrayBuffer());
-  return importBytes(bytes, file.name.toLowerCase().endsWith(".zip"));
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".epub")) return parseEpub(bytes);
+  return importBytes(bytes, name.endsWith(".zip"));
 }
 
 // ファイル選択とダウンロードのどちらで得たバイト列も、ここで本文にする

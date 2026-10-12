@@ -8,9 +8,11 @@ import { importFile } from "./importFile";
 const ACCEPT = [
   ".txt",
   ".zip",
+  ".epub",
   "text/plain",
   "application/zip",
   "application/x-zip-compressed",
+  "application/epub+zip",
 ].join(",");
 
 type Props = {
@@ -31,7 +33,7 @@ export function ImportButton({ onImport, onError }: Props) {
 
   return (
     <Button variant="outlined" component="label" startIcon={<UploadFileIcon />}>
-      手元のファイルを読む（.txt / .zip）
+      手元のファイルを読む（.txt / .epub / .zip）
       <input type="file" accept={ACCEPT} hidden onChange={handleChange} />
     </Button>
   );
