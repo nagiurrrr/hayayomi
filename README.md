@@ -34,7 +34,6 @@
 | UI 部品                | MUI                            | ボタンやスライダーなどの部品集。見た目は tsx の中に `sx` で書く                                               |
 | 青空文庫の中継         | Cloudflare Workers（wrangler） | 無料枠で動くサーバー側のプログラム。ランキングの結果は Workers KV に 1 日置く                                 |
 | 整形                   | Prettier                       | コードの書き方（ダブルクォート・セミコロンなど）を自動で揃える                                                |
-| APK 化（予定）         | Capacitor                      | Web アプリを Android アプリに包む。APK は Android アプリを入れるためのファイル                                |
 
 ## 使い方
 

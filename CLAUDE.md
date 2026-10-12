@@ -15,7 +15,6 @@
 - vite-plugin-pwa / BudouX（文節分割）/ Dexie.js（IndexedDB）/ fflate（zip展開）/ MUI（UI部品）/ react-router（画面遷移）
 - 画面の切り替えは HashRouter を使う。GitHub Pages は知らないパスを index.html に回せないため
 - 分割は単語ではなく文節単位（BudouX）。kuromoji.js は辞書が重いので使わない
-- APK化する場合は Capacitor を使う（distを同梱するのでサーバー不要・オフライン動作）。TWA は公開サーバーが必要なので使わない
 
 ## スタイル
 
