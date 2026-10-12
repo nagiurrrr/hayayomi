@@ -17,6 +17,7 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@fontsource/noto-sans-jp": "^5.3.1",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "budoux": "^0.9.3",

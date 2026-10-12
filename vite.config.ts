@@ -58,6 +58,12 @@ export default defineConfig(({ mode }) => {
                 expiration: { maxEntries: 50 },
               },
             },
+            // 和文フォントは文字の範囲ごとに分かれていて全部は要らないので、事前には取らず表示に使ったものだけ取っておく
+            {
+              urlPattern: /\/assets\/noto-sans-jp-.*\.woff2$/,
+              handler: "CacheFirst",
+              options: { cacheName: "font" },
+            },
           ],
         },
       }),

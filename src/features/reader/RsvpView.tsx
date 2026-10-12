@@ -50,6 +50,8 @@ const phraseSx = {
 // 縦書きの要素は幅が中身まで縮むので、枠とは分けて文字だけを縦書きにする
 const phraseTextSx = {
   writingMode: "vertical-rl",
+  // システムフォントだと欧文フォントの寸法で列の幅が決まり、和文が中央からずれる機種があるので、同梱した和文フォントで描く
+  fontFamily: "'Noto Sans JP', sans-serif",
   fontWeight: 500,
   whiteSpace: "nowrap",
 } as const;
