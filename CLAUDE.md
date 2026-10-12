@@ -10,11 +10,13 @@
   - 無料枠（1 日 10 万リクエスト、1 リクエストあたり CPU 10ms）に収める。重い処理（作品一覧 CSV の展開など）は Worker でしない
   - 取りに行く先は aozora.gr.jp に限り、読み取りを許す Origin は GitHub Pages と開発用サーバーに限る
 - Vite + React + TypeScript。Worker も TypeScript で書く（wrangler）
-- vite-plugin-pwa / BudouX（文節分割）/ Dexie.js（IndexedDB）/ fflate（zip展開）/ MUI（UI部品）
+- vite-plugin-pwa / BudouX（文節分割）/ Dexie.js（IndexedDB）/ fflate（zip展開）/ MUI（UI部品）/ react-router（画面遷移）
+- 画面の切り替えは HashRouter を使う。GitHub Pages は知らないパスを index.html に回せないため
 - 分割は単語ではなく文節単位（BudouX）。kuromoji.js は辞書が重いので使わない
 - APK化する場合は Capacitor を使う（distを同梱するのでサーバー不要・オフライン動作）。TWA は公開サーバーが必要なので使わない
 
 ## スタイル
+- 文字列はダブルクォート、文末にセミコロンを付ける（Prettier の既定に合わせる）
 - UI は MUI。スタイルは `sx` で tsx に書き、CSS ファイルは作らない
 - 文節を高速で切り替える表示部分では `sx` の値を毎回変えない（emotion がスタイルを計算し直す負担を避けるため）
 
@@ -38,7 +40,8 @@
 ## 進め方
 - ファイル取り込み（.txt / .zip）と全文表示はできた
 - おすすめ一覧（Worker 経由でランキングを取得し、「読む」で直接取り込む）はできた
-- 次は「文節分割 → 指定速度で表示」。本棚はその後
+- 文節分割と速読表示（縦書き・速さの指定・全文表示との行き来・残り時間）はできた
+- 次は本棚
 
 ## Issue
 - 作業中にユーザーが別件のアイデアや要望を言ったら、勝手に着手せず `/issue` の手順で GitHub issue にして、今のタスクを続ける
