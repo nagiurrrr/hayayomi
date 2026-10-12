@@ -12,6 +12,11 @@ import {
   MIN_SPEED,
   remainingWeights,
 } from "./timing";
+import {
+  PHRASE_FONT_FAMILY,
+  PHRASE_FONT_WEIGHT,
+  useFontPreload,
+} from "./useFontPreload";
 import type { Rsvp } from "./useRsvp";
 
 const SPEED_STEP = 100;
@@ -51,24 +56,30 @@ const phraseSx = {
 const phraseTextSx = {
   writingMode: "vertical-rl",
   // システムフォントだと欧文フォントの寸法で列の幅が決まり、和文が中央からずれる機種があるので、同梱した和文フォントで描く
-  fontFamily: "'Noto Sans JP', sans-serif",
-  fontWeight: 500,
+  fontFamily: `${PHRASE_FONT_FAMILY}, sans-serif`,
+  fontWeight: PHRASE_FONT_WEIGHT,
   whiteSpace: "nowrap",
 } as const;
 
 // 文節を一つずつ流して表示する
 export function RsvpView({ book, phrases, rsvp }: Props) {
   const { index, playing, speed, setSpeed, toggle, seek } = rsvp;
+  const fontReady = useFontPreload(phrases, index);
+
+  // フォントの先読みが済むまでは再生しない（途中でフォントが切り替わってちらつくため）
+  function handleToggle() {
+    if (fontReady) toggle();
+  }
 
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
       if (e.code !== "Space") return;
       e.preventDefault();
-      toggle();
+      handleToggle();
     }
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [toggle]);
+  });
 
   const remaining = useMemo(() => remainingWeights(phrases), [phrases]);
 
@@ -86,7 +97,7 @@ export function RsvpView({ book, phrases, rsvp }: Props) {
         </Typography>
       )}
 
-      <Box sx={tapAreaSx} onClick={toggle}>
+      <Box sx={tapAreaSx} onClick={handleToggle}>
         <Box sx={phraseSx}>
           <Box sx={phraseTextSx}>{phrases[index]?.text ?? ""}</Box>
         </Box>
@@ -107,10 +118,11 @@ export function RsvpView({ book, phrases, rsvp }: Props) {
         <Button
           variant="contained"
           startIcon={playing ? <PauseIcon /> : <PlayArrowIcon />}
-          onClick={toggle}
+          disabled={!fontReady}
+          onClick={handleToggle}
           sx={{ minWidth: 96 }}
         >
-          {playing ? "停止" : "再生"}
+          {fontReady ? (playing ? "停止" : "再生") : "準備中"}
         </Button>
         <Button
           variant="outlined"
