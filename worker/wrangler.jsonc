@@ -5,8 +5,13 @@
   "compatibility_date": "2026-09-01",
   "observability": { "enabled": true },
   "vars": {
-    // 読み取りを許す Origin（GitHub Pages と、npm run dev の開発用サーバー）
-    "ALLOWED_ORIGINS": "https://nagiurrrr.github.io,http://localhost:5173",
+    // 読み取りを許す Origin。パスは含めない
+    "ALLOWED_ORIGINS": [
+      // GitHub Pages
+      "https://nagiurrrr.github.io",
+      // npm run dev の開発用サーバー
+      "http://localhost:5173",
+    ],
   },
   // ランキングの結果を 1 日置いておく場所
   "kv_namespaces": [

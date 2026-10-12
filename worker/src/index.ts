@@ -49,7 +49,7 @@ export default {
 // 許可した Origin（GitHub Pages と開発用サーバー）にだけ読み取りを許す
 function corsHeaders(request: Request, env: Env): Record<string, string> {
   const origin = request.headers.get("Origin");
-  const allowed = env.ALLOWED_ORIGINS.split(",");
+  const allowed: readonly string[] = env.ALLOWED_ORIGINS;
   if (!origin || !allowed.includes(origin)) return { Vary: "Origin" };
   return {
     "Access-Control-Allow-Origin": origin,
