@@ -6,5 +6,7 @@ export const theme = createTheme({
   colorSchemes: { dark: true },
   typography: {
     fontFamily: "system-ui, 'Hiragino Sans', 'Yu Gothic UI', sans-serif",
+    // ボタンの英字を大文字にしない（MUI の既定は uppercase）
+    button: { textTransform: 'none' },
   },
 })
