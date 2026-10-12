@@ -139,23 +139,14 @@ npm run format   # Prettier でコードの書き方を揃える
 
 ### Worker（青空文庫の中継）
 
-Worker だけのコマンドは `-w worker` を付けて直下で打つ。
-
-```bash
-npm run typecheck -w worker  # 型チェック
-npm run types -w worker      # wrangler.jsonc を変えたら、型（worker-configuration.d.ts）を作り直す
-```
-
-公開先の URL は `.env.production` に書く。
+Worker だけのコマンドは `-w worker` を付けて直下で打つ（例: `npm run typecheck -w worker`）。入口・設定・URL の仕組み・出し直しの手順は [worker/README.md](worker/README.md) にまとめてある。
 
 ### 公開
 
 `main` に push すると GitHub Actions が公開する。
 
 - 画面: `.github/workflows/deploy.yml` が GitHub Pages に公開する
-- Worker: `worker/`・`shared/`・`package-lock.json` が変わった時に `.github/workflows/deploy-worker.yml` が Cloudflare に公開する。GitHub の Secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` が必要
-
-※API トークンは Cloudflare のダッシュボードの「API トークン」から、テンプレート「Cloudflare Workers を編集する」で作る
+- Worker: `worker/`・`shared/`・`package-lock.json` が変わった時に `.github/workflows/deploy-worker.yml` が Cloudflare に公開する（詳しくは [worker/README.md](worker/README.md#公開出し直し)）
 
 ### スマホで確かめる
 
