@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from "react";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 import {
   Alert,
   Button,
@@ -8,29 +9,30 @@ import {
   ListItem,
   ListItemText,
   Typography,
-} from '@mui/material'
-import type { Ranking, RankingBook } from '../../../shared/api'
-import { fetchRanking } from './api'
+} from "@mui/material";
+import type { Ranking, RankingBook } from "../../../shared/api";
+import { fetchRanking } from "./api";
 
 type Props = {
-  onRead: (book: RankingBook) => void
+  onRead: (book: RankingBook) => void;
   // 取り込み中の作品。その間はボタンを押せなくする
-  reading: RankingBook | null
-}
+  reading: RankingBook | null;
+};
 
 // 青空文庫のアクセスランキング上位の作品を並べる
 export function RecommendedList({ onRead, reading }: Props) {
-  const [ranking, setRanking] = useState<Ranking | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [ranking, setRanking] = useState<Ranking | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRanking()
       .then(setRanking)
-      .catch(() => setError('おすすめを取得できませんでした'))
-  }, [])
+      .catch(() => setError("おすすめを取得できませんでした"));
+  }, []);
 
-  if (error) return <Alert severity="warning">{error}</Alert>
-  if (!ranking) return <CircularProgress sx={{ display: 'block', mx: 'auto' }} />
+  if (error) return <Alert severity="warning">{error}</Alert>;
+  if (!ranking)
+    return <CircularProgress sx={{ display: "block", mx: "auto" }} />;
 
   return (
     <section>
@@ -52,14 +54,15 @@ export function RecommendedList({ onRead, reading }: Props) {
             secondaryAction={
               <Button
                 size="small"
+                startIcon={<MenuBookIcon />}
                 disabled={reading !== null}
                 onClick={() => onRead(book)}
               >
-                {reading === book ? '読み込み中' : '読む'}
+                {reading === book ? "読み込み中" : "読む"}
               </Button>
             }
           >
-            <Typography color="text.secondary" sx={{ minWidth: '2.5em' }}>
+            <Typography color="text.secondary" sx={{ minWidth: "2.5em" }}>
               {book.rank}
             </Typography>
             <ListItemText
@@ -73,5 +76,5 @@ export function RecommendedList({ onRead, reading }: Props) {
         ))}
       </List>
     </section>
-  )
+  );
 }
