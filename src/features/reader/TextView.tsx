@@ -1,30 +1,30 @@
-import { useEffect, useRef } from 'react'
-import { Box, Typography } from '@mui/material'
-import type { AozoraText } from '../import/aozora'
-import type { Phrase } from './phrases'
+import { useEffect, useRef } from "react";
+import { Box, Typography } from "@mui/material";
+import type { AozoraText } from "../import/aozora";
+import type { Phrase } from "./phrases";
 
 type Props = {
-  book: AozoraText
+  book: AozoraText;
   // 速読で見ていた文節。ハイライトして、そこまでスクロールする
-  current?: Phrase
-}
+  current?: Phrase;
+};
 
 const markSx = {
-  bgcolor: 'warning.main',
-  color: 'warning.contrastText',
+  bgcolor: "warning.main",
+  color: "warning.contrastText",
   borderRadius: 0.5,
-} as const
+} as const;
 
 // 本文を全文表示する。文節ごとに要素を分けると重いので、今の文節の前・今・後の 3 つに分けて描く
 export function TextView({ book, current }: Props) {
-  const markRef = useRef<HTMLElement>(null)
+  const markRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    markRef.current?.scrollIntoView({ block: 'center' })
-  }, [])
+    markRef.current?.scrollIntoView({ block: "center" });
+  }, []);
 
-  const start = current?.start ?? 0
-  const end = current ? start + current.text.length : 0
+  const start = current?.start ?? 0;
+  const end = current ? start + current.text.length : 0;
 
   return (
     <Box component="article">
@@ -36,7 +36,7 @@ export function TextView({ book, current }: Props) {
           {book.author}
         </Typography>
       )}
-      <Typography sx={{ whiteSpace: 'pre-wrap', lineHeight: 1.9 }}>
+      <Typography sx={{ whiteSpace: "pre-wrap", lineHeight: 1.9 }}>
         {current ? (
           <>
             {book.body.slice(0, start)}
@@ -50,5 +50,5 @@ export function TextView({ book, current }: Props) {
         )}
       </Typography>
     </Box>
-  )
+  );
 }

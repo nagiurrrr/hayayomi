@@ -4,10 +4,10 @@ on:
   push:
     branches: [main]
     paths:
-      - 'worker/**'
-      - 'shared/**'
-      - 'package-lock.json'
-      - '.github/workflows/deploy-worker.yml'
+      - "worker/**"
+      - "shared/**"
+      - "package-lock.json"
+      - ".github/workflows/deploy-worker.yml"
   workflow_dispatch:
 
 permissions:

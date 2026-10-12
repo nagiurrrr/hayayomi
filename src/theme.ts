@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material'
+import { createTheme } from "@mui/material";
 
 // 端末の設定に合わせてライト / ダークを切り替える
 export const theme = createTheme({
@@ -7,6 +7,6 @@ export const theme = createTheme({
   typography: {
     fontFamily: "system-ui, 'Hiragino Sans', 'Yu Gothic UI', sans-serif",
     // ボタンの英字を大文字にしない（MUI の既定は uppercase）
-    button: { textTransform: 'none' },
+    button: { textTransform: "none" },
   },
-})
+});

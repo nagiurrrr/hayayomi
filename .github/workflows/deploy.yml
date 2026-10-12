@@ -5,7 +5,7 @@ on:
     branches: [main]
     # Worker だけの変更では画面を作り直さない（deploy-worker.yml が受け持つ）
     paths-ignore:
-      - 'worker/**'
+      - "worker/**"
   workflow_dispatch:
 
 permissions:

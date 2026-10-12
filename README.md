@@ -21,16 +21,16 @@
 
 ## 技術スタック
 
-| 用途 | ライブラリ | ひとことで |
-|---|---|---|
-| フレームワーク | Vite + React + TypeScript | 画面を作る道具一式。Vite は開発用サーバーとビルド、React は画面の部品作り、TypeScript は型の付いた JavaScript |
-| PWA 化 | vite-plugin-pwa | PWA に必要な設定を自動で作る |
-| 文節分割 | BudouX | Google 製。日本語の文章を文節に区切る |
-| 保存（本棚・読書位置） | Dexie.js（IndexedDB） | IndexedDB はブラウザの中のデータ置き場。Dexie.js はそれを扱いやすくする |
-| zip 展開 | fflate | zip ファイルを開く |
-| UI 部品 | MUI | ボタンやスライダーなどの部品集。見た目は tsx の中に `sx` で書く |
-| 青空文庫の中継 | Cloudflare Workers（wrangler） | 無料枠で動くサーバー側のプログラム。ランキングの結果は Workers KV に 1 日置く |
-| APK 化（予定） | Capacitor | Web アプリを Android アプリに包む。APK は Android アプリを入れるためのファイル |
+| 用途                   | ライブラリ                     | ひとことで                                                                                                    |
+| ---------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| フレームワーク         | Vite + React + TypeScript      | 画面を作る道具一式。Vite は開発用サーバーとビルド、React は画面の部品作り、TypeScript は型の付いた JavaScript |
+| PWA 化                 | vite-plugin-pwa                | PWA に必要な設定を自動で作る                                                                                  |
+| 文節分割               | BudouX                         | Google 製。日本語の文章を文節に区切る                                                                         |
+| 保存（本棚・読書位置） | Dexie.js（IndexedDB）          | IndexedDB はブラウザの中のデータ置き場。Dexie.js はそれを扱いやすくする                                       |
+| zip 展開               | fflate                         | zip ファイルを開く                                                                                            |
+| UI 部品                | MUI                            | ボタンやスライダーなどの部品集。見た目は tsx の中に `sx` で書く                                               |
+| 青空文庫の中継         | Cloudflare Workers（wrangler） | 無料枠で動くサーバー側のプログラム。ランキングの結果は Workers KV に 1 日置く                                 |
+| APK 化（予定）         | Capacitor                      | Web アプリを Android アプリに包む。APK は Android アプリを入れるためのファイル                                |
 
 ## 使い方
 
