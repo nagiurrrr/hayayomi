@@ -8,9 +8,10 @@
 
 - ユーザーのデータはブラウザ内だけに置く。取り込み・整形・表示もブラウザ内で処理する
   - 同期やアカウントが必要になったら Supabase / Firebase を足す。保存処理は一か所にまとめて差し替えやすくしておく
-- サーバー側は、青空文庫の中継だけを Cloudflare Workers（`worker/`）に置く。青空文庫が CORS を許可していないため
+- サーバー側は、青空文庫と記事のサイト（Zenn・Qiita・note）の中継だけを Cloudflare Workers（`worker/`）に置く。どちらも CORS を許可していないため
+  - 外のサイトから取るものは、CORS を許可しているサイトでも Worker を通す。サイトごとにどちらにするか考えずに済むように
   - 無料枠（1 日 10 万リクエスト、1 リクエストあたり CPU 10ms）に収める。重い処理（作品一覧 CSV の展開など）は Worker でしない
-  - 取りに行く先は aozora.gr.jp に限り、読み取りを許す Origin は GitHub Pages と開発用サーバーに限る
+  - 取りに行く先は aozora.gr.jp と、記事のサイトの API（`worker/src/articles.ts` に書いたもの）に限る。何でも中継すると踏み台になるため。読み取りを許す Origin は GitHub Pages と開発用サーバーに限る
 - Vite + React + TypeScript。Worker も TypeScript で書く（wrangler）
 - vite-plugin-pwa / BudouX（文節分割）/ Dexie.js（IndexedDB）/ fflate（zip展開）/ MUI（UI部品）/ react-router（画面遷移）
 - 画面の切り替えは HashRouter を使う。GitHub Pages は知らないパスを index.html に回せないため
@@ -46,13 +47,23 @@
 - DRM の無い EPUB だけを読む。本文が暗号化されたもの（META-INF/encryption.xml に本文のページが載っているもの）は、読み込まずに知らせる
 - spine の順に XHTML から本文を取り出す。ルビの読み（rt / rp）は外し、目次などの付録（linear="no"）と画像は飛ばす
 
+## 記事の扱い
+
+- Zenn・Qiita・note の記事を、URL から読む。各サイトの API が返す JSON を Worker が KV に 1 日置き、そのまま返す
+  - Qiita は公式 API。認証なしでは同じ IP から 1 時間に 60 回までなので、KV で節約する
+  - Zenn・note の API は非公式で、黙って変わることがある
+- 本文の HTML からの文字の取り出しは、EPUB と同じ `src/features/import/html.ts` を使う
+- コードブロック（pre）は、速読では「（コード省略）」の 1 文節にし、全文表示でだけ中身を出す
+- 画像・数式・埋め込みは飛ばす。見出しは段落の終わりとして扱う
+- note の有料記事は、無料の部分だけを読む
+
 ## 進め方
 
 - ファイル取り込み（.txt / .zip / .epub）と全文表示はできた
 - おすすめ一覧（Worker 経由でランキングを取得し、「読む」で直接取り込む）はできた
 - 文節分割と速読表示（縦書き・速さの指定・全文表示との行き来・残り時間）はできた
-- 次は Zenn・Qiita・note の記事を URL から読めるようにする（#12）
-- その次に本棚（#7）。青空文庫・EPUB に加えて、読み込んだ記事も保存できるようにする
+- Zenn・Qiita・note の記事を URL から読めるようにした
+- 次は本棚（#7）。青空文庫・EPUB に加えて、読み込んだ記事も保存できるようにする
 - しおり（#11）は本棚の後
 - そのほかの予定は GitHub issue で管理する
 

@@ -1,20 +1,23 @@
 import { useState } from "react";
-import { Alert, Box, Container } from "@mui/material";
+import { Alert, Box, Container, Stack } from "@mui/material";
 import type { RankingBook } from "../../../shared/api";
+import { ArticleForm } from "../import/ArticleForm";
+import { parseArticle, type ArticleRef } from "../import/article";
 import type { AozoraText } from "../import/aozora";
 import { ImportButton } from "../import/ImportButton";
 import { importBytes } from "../import/importFile";
-import { fetchBookText } from "./api";
+import { fetchArticle, fetchBookText } from "./api";
 import { RecommendedList } from "./RecommendedList";
 
 type Props = {
   onOpen: (book: AozoraText) => void;
 };
 
-// ファイル選択とおすすめ一覧から、読む本を選ぶ画面
+// ファイル選択・記事の URL・おすすめ一覧から、読むものを選ぶ画面
 export function HomePage({ onOpen }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [reading, setReading] = useState<RankingBook | null>(null);
+  const [loadingArticle, setLoadingArticle] = useState(false);
 
   async function handleRead(target: RankingBook) {
     setError(null);
@@ -28,9 +31,22 @@ export function HomePage({ onOpen }: Props) {
     }
   }
 
+  async function handleReadArticle(ref: ArticleRef) {
+    setError(null);
+    setLoadingArticle(true);
+    try {
+      onOpen(parseArticle(ref.site, await fetchArticle(ref)));
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "読み込みに失敗しました");
+    } finally {
+      setLoadingArticle(false);
+    }
+  }
+
   return (
     <Container maxWidth="sm" sx={{ py: 2 }}>
-      <Box
+      <Stack
+        spacing={2}
         sx={{
           position: "sticky",
           top: 0,
@@ -39,8 +55,16 @@ export function HomePage({ onOpen }: Props) {
           bgcolor: "background.default",
         }}
       >
-        <ImportButton onImport={onOpen} onError={setError} />
-      </Box>
+        <ArticleForm
+          onRead={handleReadArticle}
+          onError={setError}
+          loading={loadingArticle}
+        />
+        {/* Stack の中では横いっぱいに伸びるので、Box で包んでボタンの幅のままにする */}
+        <Box>
+          <ImportButton onImport={onOpen} onError={setError} />
+        </Box>
+      </Stack>
 
       {error && (
         <Alert severity="error" sx={{ mt: 2 }}>

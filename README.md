@@ -8,16 +8,16 @@
 ## 特徴
 
 - スマホ主体の PWA。PC ブラウザでも利用可能
-- ユーザーのデータはブラウザの中だけに保存。サーバー側は、青空文庫の取得を中継するだけ
+- ユーザーのデータはブラウザの中だけに保存。サーバー側は、青空文庫と記事の取得を中継するだけ
 - 青空文庫のアクセスランキングから、おすすめの作品をそのまま取り込める
 - 文節単位で表示するため、単語単位より読みやすい
 - スマホで読みやすいよう、文節を縦書きで表示する
 - 表示速度はユーザーが調整可能。読了までの残り時間も出る
-- 青空文庫のテキストのほか、DRM の無い EPUB も読める
+- 青空文庫のテキストのほか、DRM の無い EPUB や、Zenn・Qiita・note の記事も読める
 
 ※PWA: Web サイトを、スマホのアプリのようにホーム画面に置いて使える仕組み。オフラインでも動く
 
-※中継: 青空文庫はほかのサイトから直接読み込むこと（CORS）を許していないため、Cloudflare Workers 上の小さなプログラムが代わりに取ってくる
+※中継: 青空文庫や Zenn・note は、ほかのサイトから直接読み込むこと（CORS）を許していないため、Cloudflare Workers 上の小さなプログラムが代わりに取ってくる
 
 ※文節: 「速読し／やすく／なる」のように、日本語として自然に区切れるかたまり
 
@@ -32,7 +32,7 @@
 | zip 展開               | fflate                         | zip ファイルを開く                                                                                            |
 | 画面遷移               | react-router                   | 一覧と読む画面を切り替える。GitHub Pages で動くよう、URL の `#` の後ろで画面を分ける（HashRouter）            |
 | UI 部品                | MUI                            | ボタンやスライダーなどの部品集。見た目は tsx の中に `sx` で書く                                               |
-| 青空文庫の中継         | Cloudflare Workers（wrangler） | 無料枠で動くサーバー側のプログラム。ランキングの結果は Workers KV に 1 日置く                                 |
+| 青空文庫・記事の中継   | Cloudflare Workers（wrangler） | 無料枠で動くサーバー側のプログラム。ランキングと記事は Workers KV に 1 日置く                                 |
 | 整形                   | Prettier                       | コードの書き方（ダブルクォート・セミコロンなど）を自動で揃える                                                |
 
 ## 使い方
@@ -53,6 +53,16 @@
 
 DRM の無い EPUB は、技術書の出版社（技術評論社の Gihyo Digital Publishing、達人出版会、オライリー・ジャパンなど）や、技術書典・BOOTH などで手に入る。
 
+### 記事を読む
+
+「手元のファイルを読む」の下の欄に記事の URL を入れて「読む」を押す。読めるのは次の形の URL。
+
+- Zenn: `https://zenn.dev/{ユーザー}/articles/{記事}`
+- Qiita: `https://qiita.com/{ユーザー}/items/{記事}`
+- note: `https://note.com/{ユーザー}/n/{記事}`（有料記事は無料の部分だけ）
+
+コードブロックは速読では「（コード省略）」と出し、「全文を見る」でだけ中身を出す。画像・数式・埋め込みは飛ばす。
+
 ### 読む画面の操作
 
 - 再生 / 停止: 「再生」ボタン、文節の枠のタップ、スペースキー
@@ -70,6 +80,7 @@ DRM の無い EPUB は、技術書の出版社（技術評論社の Gihyo Digita
 
 - 10 文字（`MAX_PHRASE_CHARS`）を超える文節は、なるべく同じ長さになるよう分ける。縦書きの枠（画面の高さの 55%、文字は高さの 5%）に収まる文字数に合わせている
 - 分けた後ろ側が「、」「。」「」」などで始まらないよう、切れ目を前にずらす
+- 記事のコードブロックは、丸ごと「（コード省略）」の 1 文節にする
 
 ### 1 文節の表示時間
 
@@ -98,17 +109,18 @@ DRM の無い EPUB は、技術書の出版社（技術評論社の Gihyo Digita
 
 ```
 shared/               画面と Worker の両方が使う型（API の返す形）
-worker/               青空文庫の中継（Cloudflare Workers）
+worker/               青空文庫と記事の中継（Cloudflare Workers）
 ├── wrangler.jsonc    Worker の設定（名前・許可する Origin・KV）
 └── src/
     ├── index.ts      入口。CORS、KV への保存
-    └── aozora.ts     ランキング・図書カードのページの読み取り
+    ├── aozora.ts     ランキング・図書カードのページの読み取り
+    └── articles.ts   記事を取りに行くサイトの API
 src/
 ├── main.tsx          起動処理（テーマの適用など）
 ├── App.tsx           画面の切り替え
 ├── theme.ts          MUI のテーマ（ライト / ダーク）
 ├── features/         機能ごとのフォルダ
-│   ├── import/       取り込み（.txt・zip・EPUB の読み込み、青空文庫の書式の整形）
+│   ├── import/       取り込み（.txt・zip・EPUB・記事の読み込み、青空文庫の書式の整形、HTML からの文字の取り出し）
 │   ├── reader/       読む画面（文節分割、表示時間、速読表示、全文表示）
 │   └── library/      一覧の画面（おすすめ一覧、本棚（予定））
 ├── storage/          保存処理（予定）。Dexie.js を使う処理はここに集める
@@ -136,7 +148,7 @@ npm run format   # Prettier でコードの書き方を揃える
 
 画面は `.env.development` の `VITE_API_URL`（`http://localhost:8787`）の Worker を使う。`npm run dev:web` の時に公開済みの Worker を使うなら、`.env.development.local` に `VITE_API_URL=公開済みの Worker の URL` を書く（git には入らない）。
 
-### Worker（青空文庫の中継）
+### Worker（青空文庫と記事の中継）
 
 Worker だけのコマンドは `-w worker` を付けて直下で打つ（例: `npm run typecheck -w worker`）。入口・設定・URL の仕組み・出し直しの手順は [worker/README.md](worker/README.md) にまとめてある。
 

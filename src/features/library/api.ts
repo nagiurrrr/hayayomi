@@ -1,10 +1,12 @@
 import {
+  articlePath,
   bookTextPath,
   type Ranking,
   type RankingBook,
 } from "../../../shared/api";
+import type { ArticleRef } from "../import/article";
 
-// 青空文庫の中継（worker/）の URL。.env.development / .env.production で切り替える
+// 青空文庫と記事のサイトの中継（worker/）の URL。.env.development / .env.production で切り替える
 const API_URL = import.meta.env.VITE_API_URL;
 
 async function get(path: string): Promise<Response> {
@@ -20,4 +22,9 @@ export async function fetchRanking(): Promise<Ranking> {
 // 「テキストファイル(ルビあり)」の zip
 export async function fetchBookText(book: RankingBook): Promise<Uint8Array> {
   return new Uint8Array(await (await get(bookTextPath(book))).arrayBuffer());
+}
+
+// 記事の JSON（各サイトの API が返したもの）
+export async function fetchArticle(ref: ArticleRef): Promise<unknown> {
+  return (await get(articlePath(ref.site, ref.id))).json();
 }
