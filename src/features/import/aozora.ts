@@ -1,7 +1,12 @@
+// 本文の中の範囲（UTF-16 の位置。end の文字は含まない）
+export type TextRange = { start: number; end: number };
+
 export type AozoraText = {
   title: string;
   author: string;
   body: string;
+  // コードブロックの範囲。速読では飛ばし、全文表示でだけ出す
+  codeBlocks?: TextRange[];
 };
 
 const SEPARATOR = /^-{10,}$/;

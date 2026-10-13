@@ -1,9 +1,12 @@
 import { jaModel, Parser } from "budoux";
+import type { TextRange } from "../import/aozora";
 
 export type Phrase = {
   text: string;
   // 本文の何文字目（UTF-16 の位置）から始まるか
   start: number;
+  // 本文の何文字目の手前で終わるか。全文表示でハイライトする範囲。コードブロックでは text と長さが違う
+  end: number;
   // 文がここで終わる（。！？ などで閉じる）
   sentenceEnd: boolean;
   // 段落がここで終わる
@@ -21,12 +24,36 @@ export const MAX_PHRASE_CHARS = 10;
 // 行の頭に来てはいけない文字（句読点・閉じ括弧など）
 const NO_LINE_START = /[、。，．,.！？!?」』）)〕］】〉》ー…‥・]/;
 
-// 本文を段落ごとに BudouX で文節に分ける
-export function splitPhrases(body: string): Phrase[] {
+// コードブロックの代わりに出す文節
+export const CODE_PLACEHOLDER = "（コード省略）";
+
+// 本文を段落ごとに BudouX で文節に分ける。コードブロックは丸ごと CODE_PLACEHOLDER の 1 文節にする
+export function splitPhrases(
+  body: string,
+  codeBlocks: TextRange[] = [],
+): Phrase[] {
   const phrases: Phrase[] = [];
+  let from = 0;
+  for (const block of codeBlocks) {
+    splitText(body, from, block.start, phrases);
+    phrases.push({
+      text: CODE_PLACEHOLDER,
+      start: block.start,
+      end: block.end,
+      sentenceEnd: false,
+      paragraphEnd: true,
+    });
+    from = block.end;
+  }
+  splitText(body, from, body.length, phrases);
+  return phrases;
+}
+
+// 本文の from から to までを文節に分けて phrases に足す
+function splitText(body: string, from: number, to: number, phrases: Phrase[]) {
   // 本文の中で、次の文節を探し始める位置
-  let cursor = 0;
-  for (const line of body.split("\n")) {
+  let cursor = from;
+  for (const line of body.slice(from, to).split("\n")) {
     const paragraph = line.trim();
     if (paragraph === "") continue;
     const chunks = parser
@@ -43,13 +70,13 @@ export function splitPhrases(body: string): Phrase[] {
         phrases.push({
           text,
           start,
+          end: cursor,
           sentenceEnd: isLast && SENTENCE_END.test(text),
           paragraphEnd: isLast && i === chunks.length - 1,
         });
       });
     });
   }
-  return phrases;
 }
 
 // 長すぎる文節を、なるべく均等な長さに分ける

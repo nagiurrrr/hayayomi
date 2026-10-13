@@ -18,7 +18,10 @@ type Props = {
 export function ReaderPage({ book }: Props) {
   const navigate = useNavigate();
   const [showFullText, setShowFullText] = useState(false);
-  const phrases = useMemo(() => (book ? splitPhrases(book.body) : []), [book]);
+  const phrases = useMemo(
+    () => (book ? splitPhrases(book.body, book.codeBlocks) : []),
+    [book],
+  );
   const rsvp = useRsvp(phrases);
 
   function toggleFullText() {

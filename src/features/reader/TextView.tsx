@@ -24,7 +24,7 @@ export function TextView({ book, current }: Props) {
   }, []);
 
   const start = current?.start ?? 0;
-  const end = current ? start + current.text.length : 0;
+  const end = current?.end ?? 0;
 
   return (
     <Box component="article">

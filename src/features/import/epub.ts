@@ -1,42 +1,6 @@
 import { unzipSync } from "fflate";
 import type { AozoraText } from "./aozora";
-
-// 段落として前後で行を分ける要素
-const BLOCK_TAGS = new Set([
-  "address",
-  "article",
-  "aside",
-  "blockquote",
-  "dd",
-  "div",
-  "dl",
-  "dt",
-  "figcaption",
-  "footer",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6",
-  "header",
-  "hr",
-  "li",
-  "ol",
-  "p",
-  "pre",
-  "section",
-  "table",
-  "tr",
-  "ul",
-]);
-
-// Node.TEXT_NODE などと同じ値。DOM の型に頼らず比べる
-const TEXT_NODE = 3;
-const ELEMENT_NODE = 1;
-
-// 文字を取り出さない要素。rt / rp はルビの読み
-const SKIP_TAGS = new Set(["head", "rp", "rt", "script", "style", "title"]);
+import { extractText, findAll, joinTexts } from "./html";
 
 // EPUB（zip に入った XHTML）から題名・著者・本文を取り出す
 export function parseEpub(bytes: Uint8Array): AozoraText {
@@ -74,13 +38,12 @@ export function parseEpub(bytes: Uint8Array): AozoraText {
     throw new Error("DRM で保護されているため読み込めません");
   }
 
-  const body = pages
-    .map((path) => extractText(parseXhtml(read(path))))
-    .filter((text) => text !== "")
-    .join("\n");
+  const { body, codeBlocks } = joinTexts(
+    pages.map((path) => extractText(parseXhtml(read(path)))),
+  );
   if (body === "") throw new Error("EPUB から本文を取り出せませんでした");
 
-  return { title, author, body };
+  return { title, author, body, codeBlocks };
 }
 
 function parseXml(text: string): Document {
@@ -92,17 +55,6 @@ function parseXhtml(text: string): Document {
   const doc = new DOMParser().parseFromString(text, "application/xhtml+xml");
   if (findAll(doc, "parsererror").length === 0) return doc;
   return new DOMParser().parseFromString(text, "text/html");
-}
-
-// 名前空間の接頭辞（dc:title など）の有無によらず、要素名で探す
-function findAll(doc: Document, name: string): Element[] {
-  return Array.from(doc.querySelectorAll("*")).filter(
-    (el) => localName(el) === name,
-  );
-}
-
-function localName(el: Element): string {
-  return (el.localName ?? el.tagName).toLowerCase().replace(/^.*:/, "");
 }
 
 // OPF からの相対パスを、zip の中のパスにする
@@ -123,37 +75,4 @@ function encryptedPaths(files: Record<string, Uint8Array>): Set<string> {
       .filter((uri): uri is string => uri !== null)
       .map((uri) => resolvePath("", uri)),
   );
-}
-
-function extractText(doc: Document): string {
-  const parts: string[] = [];
-  const root = findAll(doc, "body")[0] ?? doc.documentElement;
-  if (root) walk(root, parts);
-  return parts
-    .join("")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line !== "")
-    .join("\n");
-}
-
-function walk(node: Node, parts: string[]) {
-  if (node.nodeType === TEXT_NODE) {
-    // ソース上の改行と字下げは本文ではないので詰める
-    parts.push(
-      (node.nodeValue ?? "").replace(/\s*\n\s*/g, "").replace(/\t/g, " "),
-    );
-    return;
-  }
-  if (node.nodeType !== ELEMENT_NODE) return;
-  const name = localName(node as Element);
-  if (SKIP_TAGS.has(name)) return;
-  if (name === "br") {
-    parts.push("\n");
-    return;
-  }
-  const block = BLOCK_TAGS.has(name);
-  if (block) parts.push("\n");
-  node.childNodes.forEach((child) => walk(child, parts));
-  if (block) parts.push("\n");
 }
