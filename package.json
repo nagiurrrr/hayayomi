@@ -21,6 +21,8 @@
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "budoux": "^0.9.3",
+    "dexie": "^4.4.6",
+    "dexie-react-hooks": "^4.4.0",
     "fflate": "^0.8.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
