@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import type { Phrase } from "./phrases";
-import { DEFAULT_SPEED, phraseDuration } from "./timing";
+import { phraseDuration } from "./timing";
 
-export function useRsvp(phrases: Phrase[]) {
-  const [index, setIndex] = useState(0);
+// initialIndex・initialSpeed は、本棚に保存した読んだ位置と速さ
+export function useRsvp(
+  phrases: Phrase[],
+  initialIndex: number,
+  initialSpeed: number,
+) {
+  const [index, setIndex] = useState(initialIndex);
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(DEFAULT_SPEED);
+  const [speed, setSpeed] = useState(initialSpeed);
 
   useEffect(() => {
     if (!playing) return;

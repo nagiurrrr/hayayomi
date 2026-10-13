@@ -119,3 +119,9 @@ export function nextSentence(phrases: Phrase[], index: number): number {
   while (i < phrases.length - 1 && !isBoundary(phrases[i])) i++;
   return Math.min(i + 1, phrases.length - 1);
 }
+
+// 本文の position 文字目を含む文節の番号。保存した読んだ位置から再開するのに使う
+export function phraseIndexAt(phrases: Phrase[], position: number): number {
+  const index = phrases.findIndex((phrase) => phrase.end > position);
+  return index === -1 ? Math.max(phrases.length - 1, 0) : index;
+}

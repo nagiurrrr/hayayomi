@@ -16,7 +16,7 @@ const ACCEPT = [
 ].join(",");
 
 type Props = {
-  onImport: (book: AozoraText) => void;
+  onImport: (book: AozoraText) => Promise<void>;
   onError: (message: string) => void;
 };
 
@@ -25,7 +25,7 @@ export function ImportButton({ onImport, onError }: Props) {
     const file = event.target.files?.[0];
     if (!file) return;
     try {
-      onImport(await importFile(file));
+      await onImport(await importFile(file));
     } catch (e) {
       onError(e instanceof Error ? e.message : "読み込みに失敗しました");
     }

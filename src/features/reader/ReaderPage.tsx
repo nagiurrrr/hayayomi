@@ -1,36 +1,76 @@
-import { useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Navigate, useLocation, useNavigate, useParams } from "react-router";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArticleIcon from "@mui/icons-material/Article";
 import SpeedIcon from "@mui/icons-material/Speed";
-import { Box, Button, Container } from "@mui/material";
+import { Box, Button, CircularProgress, Container } from "@mui/material";
 import type { AozoraText } from "../import/aozora";
-import { splitPhrases } from "./phrases";
+import { openBook, type ShelfBook } from "../../storage/books";
+import { phraseIndexAt, splitPhrases } from "./phrases";
 import { RsvpView } from "./RsvpView";
 import { TextView } from "./TextView";
 import { useRsvp } from "./useRsvp";
+import { useSavePosition } from "./useSavePosition";
 
-type Props = {
-  book: AozoraText | null;
-};
+type Opened = { shelf: ShelfBook; book: AozoraText };
 
-// 本を読む画面。速読と全文表示を切り替えられる
-export function ReaderPage({ book }: Props) {
+// 本棚の本を開いて読む画面。URL の :id は本棚の ID
+export function ReaderPage() {
+  const { id } = useParams();
+  const [opened, setOpened] = useState<Opened | null>(null);
+  const [missing, setMissing] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    openBook(Number(id))
+      .then((result) => {
+        if (cancelled) return;
+        if (result) setOpened(result);
+        else setMissing(true);
+      })
+      .catch((e) => {
+        console.error(e);
+        if (!cancelled) setMissing(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  // 本棚から消した本などは、本棚に戻す
+  if (missing) return <Navigate to="/shelf" replace />;
+  if (!opened || opened.shelf.id !== Number(id)) {
+    return <CircularProgress sx={{ display: "block", mx: "auto", mt: 4 }} />;
+  }
+  return <Reader key={opened.shelf.id} {...opened} />;
+}
+
+// 本を開いた後の画面。速読と全文表示を切り替えられる
+function Reader({ shelf, book }: Opened) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showFullText, setShowFullText] = useState(false);
   const phrases = useMemo(
-    () => (book ? splitPhrases(book.body, book.codeBlocks) : []),
+    () => splitPhrases(book.body, book.codeBlocks),
     [book],
   );
-  const rsvp = useRsvp(phrases);
+  const rsvp = useRsvp(
+    phrases,
+    phraseIndexAt(phrases, shelf.position),
+    shelf.speed,
+  );
+  useSavePosition(shelf.id, phrases, rsvp);
 
   function toggleFullText() {
     rsvp.pause();
     setShowFullText(!showFullText);
   }
 
-  // 本はまだ保存していないので、再読み込みなどで失ったら一覧に戻す
-  if (!book) return <Navigate to="/" replace />;
+  // 端末の戻る操作と同じ動きにする。URL を直接開いた時など、戻る先が無ければ本棚へ
+  function handleBack() {
+    if (location.key === "default") navigate("/shelf", { replace: true });
+    else navigate(-1);
+  }
 
   return (
     <Container maxWidth="sm" sx={{ py: 2 }}>
@@ -47,12 +87,11 @@ export function ReaderPage({ book }: Props) {
           bgcolor: "background.default",
         }}
       >
-        {/* 端末の戻る操作と同じ動きにする */}
         <Button
           variant="outlined"
           size="small"
           startIcon={<ArrowBackIcon />}
-          onClick={() => navigate(-1)}
+          onClick={handleBack}
         >
           一覧に戻る
         </Button>
