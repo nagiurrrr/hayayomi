@@ -13,7 +13,7 @@
       "http://localhost:5173",
     ],
   },
-  // ランキングの結果を 1 日置いておく場所
+  // ランキングと記事を 1 日置いておく場所
   "kv_namespaces": [
     { "binding": "CACHE", "id": "5aca9470a58145cd861cf0b08e61429e" },
   ],

@@ -22,3 +22,12 @@ export type Ranking = {
 export function bookTextPath(book: Pick<RankingBook, "personId" | "workId">) {
   return `/books/${book.personId}/${book.workId}/text`;
 }
+
+// 記事を取りに行けるサイト
+export const ARTICLE_SITES = ["zenn", "qiita", "note"] as const;
+export type ArticleSite = (typeof ARTICLE_SITES)[number];
+
+// GET /articles/:site/:id は、各サイトの API が返す記事の JSON をそのまま返す
+export function articlePath(site: ArticleSite, id: string) {
+  return `/articles/${site}/${id}`;
+}

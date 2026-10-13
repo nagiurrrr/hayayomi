@@ -1,5 +1,10 @@
-// 青空文庫の中継。青空文庫は CORS を許可していないため、ブラウザの代わりに取得して返す
-import type { Ranking } from "../../shared/api";
+// 青空文庫と記事のサイトの中継。どちらも CORS を許可していないため、ブラウザの代わりに取得して返す
+import {
+  ARTICLE_SITES,
+  type ArticleSite,
+  type Ranking,
+} from "../../shared/api";
+import { ARTICLE_API_URL } from "./articles";
 import {
   RANKING_INDEX_URL,
   cardUrl,
@@ -12,10 +17,13 @@ import {
 const RANKING_LIMIT = 100;
 const RANKING_KV_KEY = "ranking";
 const DAY = 60 * 60 * 24;
-// 青空文庫側から、どこからのアクセスか分かるようにする
+// 取りに行く先から、どこからのアクセスか分かるようにする
 const USER_AGENT = "hayayomi (+https://github.com/nagiurrrr/hayayomi)";
 
 const BOOK_TEXT = /^\/books\/(\d{1,8})\/(\d{1,8})\/text$/;
+const ARTICLE = new RegExp(
+  `^/articles/(${ARTICLE_SITES.join("|")})/([\\w-]{1,64})$`,
+);
 
 export default {
   async fetch(request, env): Promise<Response> {
@@ -38,10 +46,19 @@ export default {
       if (book) {
         return await getBookText(book[1], book[2], cors);
       }
+      const article = ARTICLE.exec(pathname);
+      if (article) {
+        return await getArticle(
+          article[1] as ArticleSite,
+          article[2],
+          env,
+          cors,
+        );
+      }
       return error(404, "見つかりません", cors);
     } catch (e) {
       console.error(e);
-      return error(502, "青空文庫から取得できませんでした", cors);
+      return error(502, "元のサイトから取得できませんでした", cors);
     }
   },
 } satisfies ExportedHandler<Env>;
@@ -108,6 +125,33 @@ async function getBookText(
       "Content-Type": "application/zip",
       // 公開済みの作品の zip はほとんど変わらないので、ブラウザに 1 週間置かせる
       "Cache-Control": `public, max-age=${DAY * 7}`,
+    },
+  });
+}
+
+// 記事の JSON を KV に 1 日置く。Qiita の認証なしの API は、同じ IP から 1 時間に 60 回までしか呼べないため
+async function getArticle(
+  site: ArticleSite,
+  id: string,
+  env: Env,
+  cors: Record<string, string>,
+): Promise<Response> {
+  const key = `article:${site}:${id}`;
+  let json = await env.CACHE.get(key, "arrayBuffer");
+  if (!json) {
+    const url = ARTICLE_API_URL[site](id);
+    const res = await fetch(url, { headers: { "User-Agent": USER_AGENT } });
+    if (res.status === 404) return error(404, "記事が見つかりません", cors);
+    if (!res.ok)
+      throw new Error(`${url} の取得に失敗しました（${res.status}）`);
+    json = await res.arrayBuffer();
+    await env.CACHE.put(key, json, { expirationTtl: DAY });
+  }
+  return new Response(json, {
+    headers: {
+      ...cors,
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": `public, max-age=${DAY}`,
     },
   });
 }
