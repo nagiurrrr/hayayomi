@@ -43,12 +43,18 @@ Worker の URL は `<Worker の名前>.<アカウントのサブドメイン>.wo
 | `observability`        | Cloudflare のダッシュボードでログを見られるようにする |
 | `vars.ALLOWED_ORIGINS` | 読み取りを許す Origin の一覧                          |
 | `kv_namespaces`        | ランキングと記事を置く KV（`CACHE`）                  |
+| `ratelimits`           | 同じ IP から 1 分に呼べる回数（`RATE_LIMITER`）       |
 
 ### ALLOWED_ORIGINS
 
 - Origin は `https://nagiurrrr.github.io` のように、スキーム・ホスト・ポートだけを書く。パス（`/hayayomi/`）は含めない。ブラウザが送る `Origin` ヘッダーにパスは入らないため
 - `http://localhost:5173` を入れてあるのは、手元の開発用サーバーから公開済みの Worker を使えるようにするため。localhost は、それぞれの人の手元の PC を指すだけなので、他人のサイトに読み取りを許すことにはならない
-- 許していない Origin からの読み取りは、ブラウザが止める。Worker 自体は誰でも呼べるので、秘密の情報は返さない
+- 許していない Origin や、Origin の無い呼び出し（curl など）には 403 を返す。ただし Origin は偽れるので、秘密の情報は返さない
+
+### ratelimits
+
+- 同じ IP（`CF-Connecting-IP`）から 1 分に 60 回を超えて呼ばれたら、429 を返す。無料枠（1 日 10 万リクエスト）や、Qiita の 1 時間 60 回の上限を、繰り返しの呼び出しで使い切られないようにするため
+- 数えるのは Cloudflare の拠点ごとで、厳密ではない。`namespace_id` はアカウントの中で制限を見分ける番号で、秘密ではない
 
 ### KV の ID
 

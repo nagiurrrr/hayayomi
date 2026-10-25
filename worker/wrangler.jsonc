@@ -17,4 +17,12 @@
   "kv_namespaces": [
     { "binding": "CACHE", "id": "5aca9470a58145cd861cf0b08e61429e" },
   ],
+  // 同じ IP から 1 分に呼べる回数。namespace_id はアカウントの中で制限を見分ける番号で、秘密ではない
+  "ratelimits": [
+    {
+      "name": "RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 60, "period": 60 },
+    },
+  ],
 }

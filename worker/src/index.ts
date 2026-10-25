@@ -34,6 +34,15 @@ export default {
     if (request.method !== "GET") {
       return error(405, "GET のみ受け付けます", cors);
     }
+    // 画面以外（curl など）からの呼び出しを断る。Origin は偽れるので、回数の制限と合わせて使う
+    if (!("Access-Control-Allow-Origin" in cors)) {
+      return error(403, "許可していないサイトからは使えません", cors);
+    }
+    // 同じ IP から立て続けに呼ばれて、無料枠や取りに行く先の上限を使い切らないようにする
+    const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+    if (!(await env.RATE_LIMITER.limit({ key: ip })).success) {
+      return error(429, "しばらく待ってから試してください", cors);
+    }
 
     try {
       const { pathname } = new URL(request.url);
