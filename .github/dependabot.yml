@@ -1,4 +1,5 @@
-# 依存パッケージの更新（脆弱性の修正を含む）を、月に一度まとめて PR にする
+# 依存パッケージの更新（脆弱性の修正を含む）を、月に一度 PR にする。
+# 小さな更新（minor・patch）はまとめて 1 つにし、壊れやすい大きな更新（major）は 1 つずつ別の PR にする
 version: 2
 updates:
   # 画面と Worker（npm workspaces なので、直下の package-lock.json だけで両方を見る）
@@ -8,11 +9,15 @@ updates:
       interval: monthly
     groups:
       npm:
-        patterns: ["*"]
+        update-types: [minor, patch]
+    ignore:
+      # 型は動かす Node（GitHub Actions の node-version）に合わせる。Node を上げる時に手で上げる
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: monthly
     groups:
       actions:
-        patterns: ["*"]
+        update-types: [minor, patch]

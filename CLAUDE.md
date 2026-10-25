@@ -63,7 +63,7 @@
 - zip と EPUB は、展開した後の大きさが 100MB を超えたら読まない（`src/features/import/unzip.ts`）。EPUB の画像などは展開しない
 - ビルドした画面には、CSP を meta で入れる（`vite.config.ts`）。読み込む先は自分と Worker だけ
 - Worker は、許した Origin 以外からの呼び出しを断り、同じ IP からの回数を 1 分に 60 回までにする
-- 依存パッケージの更新は Dependabot が月に一度 PR にする
+- 依存パッケージの更新は Dependabot が月に一度 PR にする。小さな更新はまとめ、大きな更新（major）は 1 つずつ別の PR になるので、試してから入れる
 
 ## 本棚の扱い
 
