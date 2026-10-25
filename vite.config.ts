@@ -1,6 +1,6 @@
 import { minimal2023Preset } from "@vite-pwa/assets-generator/config";
 import react from "@vitejs/plugin-react";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
@@ -12,11 +12,37 @@ export default defineConfig(({ mode }) => {
   }
   const apiUrl = RegExp.escape(VITE_API_URL);
 
+  // 読み込む先を自分と Worker だけに絞る。GitHub Pages ではヘッダーを足せないので meta で書く。
+  // style の 'unsafe-inline' は、MUI（emotion）が style 要素を差し込むため
+  const csp = [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    `connect-src 'self' ${new URL(VITE_API_URL).origin}`,
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+  // 開発用サーバーは、React の差し替え（HMR）のためにインラインの script を使うので、ビルドの時だけ入れる
+  const cspPlugin: Plugin = {
+    name: "csp",
+    apply: "build",
+    transformIndexHtml: () => [
+      {
+        tag: "meta",
+        attrs: { "http-equiv": "Content-Security-Policy", content: csp },
+        injectTo: "head-prepend",
+      },
+    ],
+  };
+
   return {
     // GitHub Pages では https://nagiurrrr.github.io/hayayomi/ に置かれる
     base: "/hayayomi/",
     plugins: [
       react(),
+      cspPlugin,
       VitePWA({
         registerType: "autoUpdate",
         // favicon.svg からアイコン一式を作り、マニフェストと index.html に差し込む

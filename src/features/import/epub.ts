@@ -1,10 +1,14 @@
-import { unzipSync } from "fflate";
 import type { AozoraText } from "./aozora";
 import { extractText, findAll, joinTexts } from "./html";
+import { unzipLimited } from "./unzip";
+
+// 本文に使わない画像・音声・動画・フォントは展開しない
+const MEDIA_FILE =
+  /\.(avif|gif|jpe?g|png|svg|webp|mp3|mp4|m4a|ogg|otf|ttf|woff2?)$/i;
 
 // EPUB（zip に入った XHTML）から題名・著者・本文を取り出す
 export function parseEpub(bytes: Uint8Array): AozoraText {
-  const files = unzipSync(bytes);
+  const files = unzipLimited(bytes, (entry) => !MEDIA_FILE.test(entry.name));
   const read = (path: string): string => {
     const file = files[path];
     if (!file) throw new Error(`EPUB の中に ${path} が見つかりません`);

@@ -1,6 +1,6 @@
-import { unzipSync } from "fflate";
 import { decodeText, parseAozora, type AozoraText } from "./aozora";
 import { parseEpub } from "./epub";
+import { unzipLimited } from "./unzip";
 
 export async function importFile(file: File): Promise<AozoraText> {
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -15,9 +15,9 @@ export function importBytes(bytes: Uint8Array, isZip: boolean): AozoraText {
 }
 
 function extractTextFromZip(bytes: Uint8Array): Uint8Array {
-  const entries = unzipSync(bytes, {
-    filter: (entry) => entry.name.toLowerCase().endsWith(".txt"),
-  });
+  const entries = unzipLimited(bytes, (entry) =>
+    entry.name.toLowerCase().endsWith(".txt"),
+  );
   const first = Object.values(entries)[0];
   if (!first) {
     throw new Error("zip の中にテキストファイルが見つかりません");
