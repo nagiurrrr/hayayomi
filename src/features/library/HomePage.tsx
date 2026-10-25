@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Alert, Box, Container, Stack } from "@mui/material";
+import { Alert, Box, Container, Snackbar, Stack } from "@mui/material";
 import type { RankingBook } from "../../../shared/api";
 import { ArticleForm } from "../import/ArticleForm";
 import { parseArticle, type ArticleRef } from "../import/article";
 import type { AozoraText } from "../import/aozora";
 import { ImportButton } from "../import/ImportButton";
 import { importBytes } from "../import/importFile";
+import { decodePage, pageKeyUrl, parsePage } from "../import/web";
 import { DEFAULT_SPEED } from "../reader/timing";
 import { addBook, type BookSource } from "../../storage/books";
-import { fetchArticle, fetchBookText } from "./api";
+import { fetchArticle, fetchBookText, fetchPage } from "./api";
 import { RecommendedList } from "./RecommendedList";
 
 // ファイル選択・記事の URL・おすすめ一覧から、読むものを選ぶ画面
@@ -56,6 +57,22 @@ export function HomePage() {
     }
   }
 
+  async function handleReadPage(url: string) {
+    setError(null);
+    setLoadingArticle(true);
+    try {
+      const { bytes, contentType } = await fetchPage(url);
+      await open(parsePage(decodePage(bytes, contentType), url), {
+        kind: "web",
+        url: pageKeyUrl(url),
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "読み込みに失敗しました");
+    } finally {
+      setLoadingArticle(false);
+    }
+  }
+
   return (
     <Container maxWidth="sm" sx={{ py: 2 }}>
       <Stack
@@ -70,6 +87,7 @@ export function HomePage() {
       >
         <ArticleForm
           onRead={handleReadArticle}
+          onReadPage={handleReadPage}
           onError={setError}
           loading={loadingArticle}
         />
@@ -82,11 +100,17 @@ export function HomePage() {
         </Box>
       </Stack>
 
-      {error && (
-        <Alert severity="error" sx={{ mt: 2 }}>
+      {/* 下のタブ（高さ 56px）の上に出す。上に出すと URL の欄に重なり、入れ直せなくなる */}
+      <Snackbar
+        open={error !== null}
+        autoHideDuration={6000}
+        onClose={(_, reason) => reason !== "clickaway" && setError(null)}
+        sx={{ bottom: "calc(64px + env(safe-area-inset-bottom))" }}
+      >
+        <Alert severity="error" onClose={() => setError(null)}>
           {error}
         </Alert>
-      )}
+      </Snackbar>
 
       <Box sx={{ mt: 2 }}>
         <RecommendedList onRead={handleRead} reading={reading} />

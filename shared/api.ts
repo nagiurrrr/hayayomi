@@ -31,3 +31,9 @@ export type ArticleSite = (typeof ARTICLE_SITES)[number];
 export function articlePath(site: ArticleSite, id: string) {
   return `/articles/${site}/${id}`;
 }
+
+// GET /page?url=... は、任意の Web ページの HTML をそのまま返す
+// 読めないときの status: 400 通せない URL / 404 ページが無い / 413 大きすぎる / 415 HTML でない / 429 回数が多すぎる / 502 取得の失敗
+export function pagePath(url: string) {
+  return `/page?url=${encodeURIComponent(url)}`;
+}

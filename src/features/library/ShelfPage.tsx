@@ -29,10 +29,14 @@ const SITE_NAMES: Record<ArticleSite, string> = {
   note: "note",
 };
 
-// 著者の欄に出す文字。記事ならサイト名も添える
+// 著者の欄に出す文字。記事・Web ページならサイト名（ドメイン）も添える
 function byline(book: ShelfBook): string {
-  if (book.source.kind !== "article") return book.author;
-  const site = SITE_NAMES[book.source.site];
+  const { source } = book;
+  if (source.kind !== "article" && source.kind !== "web") return book.author;
+  const site =
+    source.kind === "article"
+      ? SITE_NAMES[source.site]
+      : new URL(source.url).hostname;
   return book.author ? `${site}・${book.author}` : site;
 }
 

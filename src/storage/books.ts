@@ -10,6 +10,8 @@ function sourceKey(book: AozoraText, source: BookSource): string {
       return `aozora:${source.personId}/${source.workId}`;
     case "article":
       return `article:${source.site}:${source.id}`;
+    case "web":
+      return `web:${source.url}`;
     case "file":
       return `file:${book.title}\n${book.author}\n${book.body.length}`;
   }

@@ -6,6 +6,8 @@ import type { TextRange } from "../features/import/aozora";
 export type BookSource =
   | { kind: "aozora"; personId: string; workId: string }
   | { kind: "article"; site: ArticleSite; id: string }
+  // Zenn・Qiita・note 以外の Web ページ。url は # 以降を除いたもの
+  | { kind: "web"; url: string }
   // 手元のファイル（.txt / .zip / .epub）
   | { kind: "file" };
 

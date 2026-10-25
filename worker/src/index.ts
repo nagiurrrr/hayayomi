@@ -1,4 +1,4 @@
-// 青空文庫と記事のサイトの中継。どちらも CORS を許可していないため、ブラウザの代わりに取得して返す
+// 青空文庫・記事のサイト・任意の Web ページの中継。CORS を許可していないことがあるため、ブラウザの代わりに取得して返す
 import {
   ARTICLE_SITES,
   type ArticleSite,
@@ -13,12 +13,17 @@ import {
   parseRanking,
   rankingUrl,
 } from "./aozora";
+import { isAllowedPageUrl, limitSize } from "./page";
 
 const RANKING_LIMIT = 100;
 const RANKING_KV_KEY = "ranking";
 const DAY = 60 * 60 * 24;
 // 取りに行く先から、どこからのアクセスか分かるようにする
 const USER_AGENT = "hayayomi (+https://github.com/nagiurrrr/hayayomi)";
+
+// 任意の Web ページの大きさの上限と、転送をたどる回数の上限
+const PAGE_MAX_BYTES = 5 * 1024 * 1024;
+const PAGE_MAX_REDIRECTS = 5;
 
 const BOOK_TEXT = /^\/books\/(\d{1,8})\/(\d{1,8})\/text$/;
 const ARTICLE = new RegExp(
@@ -45,7 +50,7 @@ export default {
     }
 
     try {
-      const { pathname } = new URL(request.url);
+      const { pathname, searchParams } = new URL(request.url);
       if (pathname === "/ranking") {
         return Response.json(await getRanking(env), {
           headers: { ...cors, "Cache-Control": `public, max-age=${DAY}` },
@@ -63,6 +68,9 @@ export default {
           env,
           cors,
         );
+      }
+      if (pathname === "/page") {
+        return await getPage(searchParams.get("url"), cors);
       }
       return error(404, "見つかりません", cors);
     } catch (e) {
@@ -161,6 +169,55 @@ async function getArticle(
       ...cors,
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": `public, max-age=${DAY}`,
+    },
+  });
+}
+
+// 任意の Web ページの HTML を、中身を読まずにそのまま流す。踏み台にされないよう、行き先・種類・大きさを絞る（回数は fetch の入口で絞る）
+async function getPage(
+  target: string | null,
+  cors: Record<string, string>,
+): Promise<Response> {
+  let url: URL;
+  try {
+    url = new URL(target ?? "");
+  } catch {
+    return error(400, "URL の形ではありません", cors);
+  }
+  if (!isAllowedPageUrl(url)) return error(400, "通せない URL です", cors);
+
+  // 転送された先も同じく調べるため、自分でたどる
+  let res: Response | undefined;
+  for (let i = 0; i <= PAGE_MAX_REDIRECTS; i++) {
+    res = await fetch(url, {
+      headers: { "User-Agent": USER_AGENT, Accept: "text/html" },
+      redirect: "manual",
+    });
+    const location = res.headers.get("Location");
+    if (res.status < 300 || res.status >= 400 || !location) break;
+    url = new URL(location, url);
+    if (!isAllowedPageUrl(url)) return error(400, "通せない URL です", cors);
+    res = undefined;
+  }
+  if (!res) return error(502, "転送が多すぎます", cors);
+  if (res.status === 404 || res.status === 410)
+    return error(404, "ページが見つかりません", cors);
+  if (!res.ok || !res.body)
+    throw new Error(`${url} の取得に失敗しました（${res.status}）`);
+
+  const type = res.headers.get("Content-Type") ?? "";
+  if (!/^text\/html|^application\/xhtml\+xml/i.test(type))
+    return error(415, "HTML ではありません", cors);
+  if (Number(res.headers.get("Content-Length") ?? 0) > PAGE_MAX_BYTES)
+    return error(413, "ページが大きすぎます", cors);
+
+  return new Response(limitSize(res.body, PAGE_MAX_BYTES), {
+    headers: {
+      ...cors,
+      // 文字コードは画面で読み分けるので、元の charset をそのまま渡す
+      "Content-Type": type,
+      // ページは書き換わることがあるので、ブラウザに置かせるのは 1 時間だけ
+      "Cache-Control": "public, max-age=3600",
     },
   });
 }
