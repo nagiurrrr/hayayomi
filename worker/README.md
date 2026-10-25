@@ -2,7 +2,7 @@
 
 青空文庫や Zenn・note は、ほかのサイトから直接読み込むこと（CORS）を許していない。そのため、Cloudflare Workers 上のこの小さなプログラムが、ブラウザの代わりに取ってきて返す。Qiita は CORS を許しているが、サイトごとに分けて考えずに済むよう、同じく Worker を通す。
 
-公開先: https://api.hayayomi.workers.dev
+公開先: https://api.nagiurrrr.workers.dev
 
 ## 入口
 
