@@ -93,6 +93,13 @@
 - その次にテストを入れ、文節分割・本文の取り出し・保存処理などを広く守る（#6）
 - そのほかの予定は GitHub issue で管理する
 
+## 公開
+
+- 画面も Worker も、`main` への push で GitHub Actions が公開する（`.github/workflows/deploy.yml`・`deploy-worker.yml`）。「デプロイして」と言われたら push のことで、`npm run deploy -w worker` は手元から実行しない
+  - 手元から公開すると、手元のコードがそのまま本番を上書きし、`main` に後から入った変更が本番から消えるため
+- push の前に `git fetch` し、`origin/main` に新しいコミットがあれば先に取り込む（Dependabot やクラウドのセッションが `main` に入れることがある）
+- 詳しい手順は `worker/README.md` の「公開（出し直し）」
+
 ## Issue
 
 - 作業中にユーザーが別件のアイデアや要望を言ったら、勝手に着手せず `/issue` の手順で GitHub issue にして、今のタスクを続ける

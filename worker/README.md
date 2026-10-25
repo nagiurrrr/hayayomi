@@ -102,6 +102,7 @@ npm run types -w worker      # wrangler.jsonc を変えたら、型（worker-con
 - **GitHub Actions**: `worker/`・`shared/`・`package-lock.json` が変わった `main` への push で、`.github/workflows/deploy-worker.yml` が公開する。手で動かすなら、GitHub の Actions から「Deploy Worker」を「Run workflow」する
   - GitHub の Secrets に `CLOUDFLARE_API_TOKEN` と `CLOUDFLARE_ACCOUNT_ID` が要る。API トークンは Cloudflare のダッシュボードの「API トークン」から、テンプレート「Cloudflare Workers を編集する」で作る
 - **手元から**: `npx wrangler login` の後に `npm run deploy -w worker`
+  - 手元のコードがそのまま本番を上書きする。`main` に後から入った変更（守りの設定など）が手元に無いと、それが本番から消える。Actions が使えない時だけにし、`git pull` で `origin/main` と同じにしてから行う
 
 ### URL を変える時
 
