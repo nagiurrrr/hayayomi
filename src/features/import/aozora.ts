@@ -11,6 +11,8 @@ export type AozoraText = {
 
 const SEPARATOR = /^-{10,}$/;
 const FOOTER_START = /^底本[：:]/;
+// 作品名・副題・著者・訳者などが並ぶ見出しの、行数の上限
+const MAX_HEADER_LINES = 10;
 
 // UTF-8 として正しく読めなければ Shift_JIS とみなす
 export function decodeText(bytes: Uint8Array): string {
@@ -22,10 +24,12 @@ export function decodeText(bytes: Uint8Array): string {
 }
 
 export function parseAozora(raw: string): AozoraText {
-  const lines = raw.replace(/\r\n?/g, "\n").split("\n");
+  // 末尾の改行を残すと、最後の空の行を見出しの終わりと取り違える
+  const lines = raw.replace(/\r\n?/g, "\n").trimEnd().split("\n");
 
-  // 冒頭の作品名・著者名（最初の空行まで）
-  const firstBlank = lines.findIndex((line) => line.trim() === "");
+  // 冒頭の作品名・著者名（最初の空行まで）。空行が冒頭に無ければ見出しは無いとみなす
+  const found = lines.findIndex((line) => line.trim() === "");
+  const firstBlank = found > MAX_HEADER_LINES ? -1 : found;
   const header = firstBlank === -1 ? [] : lines.slice(0, firstBlank);
   const title = header[0]?.trim() ?? "";
   const author = header.length >= 2 ? header[header.length - 1].trim() : "";
