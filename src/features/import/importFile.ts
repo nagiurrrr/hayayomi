@@ -6,7 +6,11 @@ export async function importFile(file: File): Promise<AozoraText> {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const name = file.name.toLowerCase();
   if (name.endsWith(".epub")) return parseEpub(bytes);
-  return importBytes(bytes, name.endsWith(".zip"));
+  const text = importBytes(bytes, name.endsWith(".zip"));
+  // 見出しの無いテキストは、ファイル名（拡張子を除く）を題名にする
+  return text.title
+    ? text
+    : { ...text, title: file.name.replace(/\.[^.]+$/, "") };
 }
 
 // ファイル選択とダウンロードのどちらで得たバイト列も、ここで本文にする
