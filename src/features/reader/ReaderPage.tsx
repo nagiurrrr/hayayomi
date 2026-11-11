@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useLocation, useNavigate, useParams } from "react-router";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArticleIcon from "@mui/icons-material/Article";
 import SpeedIcon from "@mui/icons-material/Speed";
@@ -49,7 +55,10 @@ export function ReaderPage() {
 function Reader({ shelf, book }: Opened) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [showFullText, setShowFullText] = useState(false);
+  // 全文表示は履歴に積み、端末の戻る操作で速読に戻れるようにする
+  const [searchParams, setSearchParams] = useSearchParams();
+  const showFullText = searchParams.get("view") === "text";
+  const pushedFullText = location.state?.fromRsvp === true;
   const phrases = useMemo(
     () => splitPhrases(book.body, book.codeBlocks),
     [book],
@@ -63,13 +72,16 @@ function Reader({ shelf, book }: Opened) {
 
   function toggleFullText() {
     rsvp.pause();
-    setShowFullText(!showFullText);
+    if (!showFullText)
+      setSearchParams({ view: "text" }, { state: { fromRsvp: true } });
+    else if (pushedFullText) navigate(-1);
+    else setSearchParams({}, { replace: true });
   }
 
   // 端末の戻る操作と同じ動きにする。URL を直接開いた時など、戻る先が無ければ本棚へ
   function handleBack() {
     if (location.key === "default") navigate("/shelf", { replace: true });
-    else navigate(-1);
+    else navigate(pushedFullText ? -2 : -1);
   }
 
   return (
