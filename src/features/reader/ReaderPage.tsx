@@ -9,7 +9,15 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ArticleIcon from "@mui/icons-material/Article";
 import SpeedIcon from "@mui/icons-material/Speed";
-import { Box, Button, CircularProgress, Container } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogTitle,
+} from "@mui/material";
 import type { AozoraText } from "../import/aozora";
 import { openBook, type ShelfBook } from "../../storage/books";
 import { phraseIndexAt, splitPhrases } from "./phrases";
@@ -69,6 +77,14 @@ function Reader({ shelf, book }: Opened) {
     shelf.speed,
   );
   useSavePosition(shelf.id, phrases, rsvp);
+  // 全文表示でダブルタップした文節。確かめてから、そこから速読する
+  const [picked, setPicked] = useState<number | null>(null);
+
+  function startFromPicked() {
+    if (picked !== null) rsvp.seek(picked);
+    setPicked(null);
+    toggleFullText();
+  }
 
   function toggleFullText() {
     rsvp.pause();
@@ -117,10 +133,21 @@ function Reader({ shelf, book }: Opened) {
         </Button>
       </Box>
       {showFullText ? (
-        <TextView book={book} current={phrases[rsvp.index]} />
+        <TextView
+          book={book}
+          current={phrases[rsvp.index]}
+          onPick={(position) => setPicked(phraseIndexAt(phrases, position))}
+        />
       ) : (
         <RsvpView book={book} phrases={phrases} rsvp={rsvp} />
       )}
+      <Dialog open={picked !== null} onClose={() => setPicked(null)}>
+        <DialogTitle>ここから速読しますか？</DialogTitle>
+        <DialogActions>
+          <Button onClick={() => setPicked(null)}>やめる</Button>
+          <Button onClick={startFromPicked}>OK</Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
