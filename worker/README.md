@@ -2,7 +2,7 @@
 
 青空文庫や Zenn・note は、ほかのサイトから直接読み込むこと（CORS）を許していない。そのため、Cloudflare Workers 上のこの小さなプログラムが、ブラウザの代わりに取ってきて返す。Qiita は CORS を許しているが、サイトごとに分けて考えずに済むよう、同じく Worker を通す。
 
-公開先: https://api.nagiurrrr.workers.dev
+公開先: https://hayayomi.nagiurrrr.workers.dev
 
 ## 入口
 
@@ -28,8 +28,8 @@ worker/
 
 Worker の URL は `<Worker の名前>.<アカウントのサブドメイン>.workers.dev` になる。
 
-- Worker の名前: `wrangler.jsonc` の `name`（`api`）
-- アカウントのサブドメイン: Cloudflare のダッシュボードで決める（`hayayomi`）
+- Worker の名前: `wrangler.jsonc` の `name`（`hayayomi`）。ほかの Worker と見分けられるよう、アプリの名前にしている
+- アカウントのサブドメイン: Cloudflare のダッシュボードで決める（`nagiurrrr`）
 
 画面には、ビルドの時に `.env.production` の `VITE_API_URL` が埋め込まれる。開発中は `.env.development` の `http://localhost:8787`（`npm run dev` で動く Worker）を使う。
 
